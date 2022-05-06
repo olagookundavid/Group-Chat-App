@@ -1,6 +1,6 @@
-// ignore_for_file: sized_box_for_whitespace, unnecessary_null_comparison, avoid_print
-
+import 'package:chat_app/registration_screen.dart';
 import 'package:flutter/material.dart';
+import 'utilities/dialogues.dart';
 import 'rounded_button.dart';
 import 'constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,23 +16,44 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _auth = FirebaseAuth.instance;
-  late String email;
-  late String password;
+  late final TextEditingController _email;
+  late final TextEditingController _password;
+
+  @override
+  void initState() {
+    _email = TextEditingController();
+    _password = TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24.0,
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Hero(
-              tag: 'logo',
-              child: Container(
-                height: 200.0,
-                child: Image.asset('images/logo.png'),
+            Flexible(
+              child: Hero(
+                tag: 'logo',
+                child: SizedBox(
+                  height: 200.0,
+                  child: Image.asset(
+                    'images/logo.png',
+                  ),
+                ),
               ),
             ),
             const SizedBox(
@@ -41,22 +62,20 @@ class _LoginScreenState extends State<LoginScreen> {
             TextField(
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.emailAddress,
-                onChanged: (value) {
-                  email = value;
-                },
+                controller: _email,
                 decoration: kTextFieldDecoration.copyWith(
-                    hintText: 'Enter Your Email')),
+                  hintText: 'Enter Your Email',
+                )),
             const SizedBox(
               height: 8.0,
             ),
             TextField(
                 textAlign: TextAlign.center,
                 obscureText: true,
-                onChanged: (value) {
-                  password = value;
-                },
+                controller: _password,
                 decoration: kTextFieldDecoration.copyWith(
-                    hintText: 'Enter Your Password')),
+                  hintText: 'Enter Your Password',
+                )),
             const SizedBox(
               height: 24.0,
             ),
@@ -65,17 +84,38 @@ class _LoginScreenState extends State<LoginScreen> {
               colour: Colors.lightBlueAccent,
               onPressed: () async {
                 try {
-                  final user = await _auth.signInWithEmailAndPassword(
-                      email: email, password: password);
-                      Navigator.pushNamed(context, ChatScreen.id);
-                      if(user != null){
-                        
-                      }
+                  final email = _email.text;
+                  final password = _password.text;
+
+                  await _auth.signInWithEmailAndPassword(
+                    email: email,
+                    password: password,
+                  );
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    ChatScreen.id,
+                    (route) => false,
+                  );
                 } catch (e) {
-                  print(e);
+                  await showErrorDialog(context, e.toString());
                 }
+                // on FirebaseAuthException{
+                //   switch (e) {
+                //     case :
+
+                //       break;
+                //     default:
+                //   }
+                // }
               },
             ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, RegistrationScreen.id),
+              child: const Text(
+                'Not Registered yet?,click here ',
+              ),
+            )
           ],
         ),
       ),

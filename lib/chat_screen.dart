@@ -1,10 +1,14 @@
-// ignore_for_file: deprecated_member_use, avoid_print, unused_local_variable
+// ignore_for_file: , avoid_print,
 
 import 'package:chat_app/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'utilities/dialogues.dart';
+import 'login_screen.dart';
+
+enum MenuAction { logout, switchuser }
 
 class ChatScreen extends StatefulWidget {
   static const String id = 'chat_screen';
@@ -15,36 +19,35 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  late User loggedInUser;
+  late final TextEditingController _messageTextController;
+
   @override
   void initState() {
     super.initState();
     getCurrentUser();
+    _messageTextController = TextEditingController();
   }
 
   //fireauth initialization
   final _auth = FirebaseAuth.instance;
-  late final User loggedInUser;
 
-//firestore initialization
+  //firestore initialization
   final _firestore = FirebaseFirestore.instance;
-  late String messageText;
 
   getCurrentUser() {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        loggedInUser = user;
-        print(loggedInUser.email);
-      }
-    } catch (e) {
-      print(e);
-    } 
+    final user = _auth.currentUser;
+    if (user != null) {
+      loggedInUser = user;
+    } else {
+      return;
+    }
   }
 
-  void getmessages() async {
-    await for (var snapshot in _firestore.collection('messages').snapshots()) {
-      for (var message in snapshot.docs) {}
-    }
+  @override
+  void dispose() {
+    _messageTextController.dispose();
+    super.dispose();
   }
 
   @override
@@ -53,12 +56,44 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         leading: null,
         actions: <Widget>[
-          IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                _auth.signOut();
-                Navigator.pushNamed(context, WelcomeScreen.id);
-              }),
+          PopupMenuButton(
+            onSelected: (value) async {
+              switch (value) {
+                case MenuAction.logout:
+                  final shouldlogout = await showLogoutDialog(context);
+
+                  if (shouldlogout) {
+                    // await auth.logOut();
+                    _auth.signOut();
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, WelcomeScreen.id, (route) => false);
+                  }
+                  break;
+                case MenuAction.switchuser:
+                  final shouldswitchuser = await switchUserDialog(context);
+
+                  if (shouldswitchuser) {
+                    // await auth.logOut();
+                    _auth.signOut();
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, LoginScreen.id, (route) => false);
+                  }
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return const [
+                PopupMenuItem<MenuAction>(
+                  child: Text('Log Out'),
+                  value: MenuAction.logout,
+                ),
+                PopupMenuItem<MenuAction>(
+                  child: Text('Switch User'),
+                  value: MenuAction.switchuser,
+                )
+              ];
+            },
+          )
         ],
         title: const Text('⚡️Chat'),
         backgroundColor: Colors.lightBlueAccent,
@@ -68,6 +103,43 @@ class _ChatScreenState extends State<ChatScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: _firestore.collection('messages').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final messages = snapshot.data?.docs.reversed;
+                  List<MessageBubble> messageWidgets = [];
+                  for (var message in messages!) {
+                    final String messagetext = message.data()['text'];
+                    final String messageSender = message.data()['sender'];
+                    final currentUser = loggedInUser.email;
+
+                    final messagebubble = MessageBubble(
+                      text: messagetext,
+                      sender: messageSender,
+                      isMe: currentUser == messageSender,
+                    );
+
+                    messageWidgets.add(messagebubble);
+                  }
+                  return Expanded(
+                      child: ListView(
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 20,
+                    ),
+                    children: messageWidgets,
+                  ));
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      backgroundColor: Colors.lightBlueAccent,
+                    ),
+                  );
+                }
+              },
+            ),
             Container(
               decoration: kMessageContainerDecoration,
               child: Row(
@@ -75,16 +147,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Expanded(
                     child: TextField(
-                      onChanged: (value) {
-                        messageText = value;
-                      },
+                      controller: _messageTextController,
                       decoration: kMessageTextFieldDecoration,
                     ),
                   ),
-                  FlatButton(
+                  TextButton(
                     onPressed: () {
+                      final messageText = _messageTextController.text;
+                      _messageTextController.clear();
                       _firestore.collection('messages').add(
-                          {'text': messageText, 'sender': loggedInUser.email});
+                        {
+                          'text': messageText,
+                          'sender': loggedInUser.email
+                          // _auth.currentUser?.email ?? 'anon'
+                        },
+                      );
                     },
                     child: const Text(
                       'Send',
@@ -96,6 +173,62 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class MessageBubble extends StatelessWidget {
+  const MessageBubble(
+      {Key? key, required this.text, required this.sender, required this.isMe})
+      : super(key: key);
+  final String? text;
+  final String? sender;
+  final bool isMe;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment:
+            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            sender!,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+            ),
+          ),
+          Material(
+            borderRadius: isMe
+                ? const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    topLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  )
+                : const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+            elevation: 5,
+            color: isMe ? Colors.lightBlueAccent : Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 20,
+              ),
+              child: Text(
+                '$text',
+                style: TextStyle(
+                  color: isMe ? Colors.white : Colors.black54,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -14,17 +14,24 @@ class WelcomeScreen extends StatefulWidget {
   _WelcomeScreenState createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProviderStateMixin {
- late AnimationController controller;
+class _WelcomeScreenState extends State<WelcomeScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
   late Animation animation;
 
   @override
   void initState() {
     super.initState();
-    controller =
-        AnimationController(duration: const Duration(seconds: 1), vsync: this);
-    animation = ColorTween(begin: Colors.blueGrey, end: Colors.white)
-        .animate(controller);
+    controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    animation = ColorTween(
+      begin: Colors.blueGrey,
+      end: Colors.white,
+    ).animate(
+      controller,
+    );
     controller.forward();
     controller.addListener(() {
       setState(() {});
@@ -36,6 +43,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     controller.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,33 +64,37 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                 ),
                 AnimatedTextKit(
-  animatedTexts: [
-    TypewriterAnimatedText(
-      'Flash Chat',
-      textStyle: const TextStyle(
-        fontSize: 45.0,
-        fontWeight: FontWeight.w900,
-      ),
-      speed: const Duration(milliseconds: 500),
-    ),
-  ],
-  
-  totalRepeatCount: 100,
-  pause: const Duration(milliseconds: 500),
-  displayFullTextOnTap: true,
-  stopPauseOnTap: true,
-),
+                  animatedTexts: [
+                    TypewriterAnimatedText(
+                      'Team Chat',
+                      textAlign: TextAlign.center,
+                      textStyle: const TextStyle(
+                        color: Colors.black45,
+                        fontSize: 45.0,
+                        fontWeight: FontWeight.w900,
+                        fontStyle: FontStyle.italic,
+                      ),
+                      speed: const Duration(milliseconds: 100),
+                    ),
+                  ],
+                  totalRepeatCount: 100,
+                  pause: const Duration(milliseconds: 500),
+                  displayFullTextOnTap: true,
+                  stopPauseOnTap: true,
+                ),
               ],
             ),
             const SizedBox(
               height: 48.0,
             ),
-            RoundedButton(title: 'Log In',
+            RoundedButton(
+              title: 'Log In',
               colour: Colors.lightBlueAccent,
               onPressed: () {
                 Navigator.pushNamed(context, LoginScreen.id);
-              },),
-             RoundedButton(
+              },
+            ),
+            RoundedButton(
               title: 'Register',
               colour: Colors.blueAccent,
               onPressed: () {
