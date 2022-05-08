@@ -70,7 +70,7 @@ Future<bool> switchUserDialog(
     context: context,
     title: "Switch User",
     content:
-        'do you want to switch user? \n Note: This action would log you out',
+        'Do you want to switch user? \nNote: This action would log you out',
     optionsBuilder: () => {
       'Cancel': false,
       'Log out': true,

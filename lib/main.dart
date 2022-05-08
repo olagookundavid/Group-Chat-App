@@ -1,3 +1,4 @@
+import 'package:chat_app/emailverify.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/welcome_screen.dart';
 import 'package:chat_app/registration_screen.dart';
@@ -23,6 +24,8 @@ class FlashChat extends StatelessWidget {
         LoginScreen.id: (context) => const LoginScreen(),
         RegistrationScreen.id: (context) => const RegistrationScreen(),
         ChatScreen.id: (context) => const ChatScreen(),
+        EmailVerificationScreen.id: (context) =>
+            const EmailVerificationScreen(),
       },
     );
   }

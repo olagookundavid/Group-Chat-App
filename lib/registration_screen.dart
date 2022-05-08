@@ -1,10 +1,13 @@
-import 'package:chat_app/chat_screen.dart';
+import 'package:chat_app/emailverify.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'utilities/dialogues.dart';
 import 'rounded_button.dart';
 import 'constants.dart';
 // import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+
+final _auth = FirebaseAuth.instance;
+final user = _auth.currentUser;
 
 class RegistrationScreen extends StatefulWidget {
   static const String id = 'registration_screen';
@@ -16,7 +19,7 @@ class RegistrationScreen extends StatefulWidget {
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   // bool showSpinner = false;
-  final _auth = FirebaseAuth.instance;
+
   late final TextEditingController _email;
   late final TextEditingController _password;
 
@@ -52,7 +55,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 child: SizedBox(
                   height: 200.0,
                   child: Image.asset(
-                    'images/logo.png',
+                    'images/bestteam.png',
+                    fit: BoxFit.fill,
                   ),
                 ),
               ),
@@ -95,10 +99,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     email: email,
                     password: password,
                   );
-
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    ChatScreen.id,
+                  await user?.sendEmailVerification();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    EmailVerificationScreen.id,
                     (route) => false,
                   );
                 }

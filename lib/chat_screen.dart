@@ -44,6 +44,26 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  Future deleteData(String id) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user?.uid)
+          .collection("collection_name")
+          .doc(id)
+          .delete();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<void> rejectJob(String jobId) {
+    return _firestore
+        .collection('jobs')
+        .doc(FieldPath.documentId.toString())
+        .delete();
+  }
+
   @override
   void dispose() {
     _messageTextController.dispose();
@@ -54,7 +74,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: null,
+        leading: Image.asset(
+          'images/chatviewicon.png',
+          fit: BoxFit.fitWidth,
+        ),
         actions: <Widget>[
           PopupMenuButton(
             onSelected: (value) async {
@@ -95,8 +118,16 @@ class _ChatScreenState extends State<ChatScreen> {
             },
           )
         ],
-        title: const Text('⚡️Chat'),
-        backgroundColor: Colors.lightBlueAccent,
+        title: const Text(
+          'Team Chat',
+          style: TextStyle(
+            color: Colors.blueGrey,
+            fontWeight: FontWeight.bold,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white70,
       ),
       body: SafeArea(
         child: Column(
@@ -104,7 +135,13 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _firestore.collection('messages').snapshots(),
+              stream: _firestore
+                  .collection('messages')
+                  .orderBy(
+                    'timestamp',
+                    descending: false,
+                  )
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   final messages = snapshot.data?.docs.reversed;
@@ -112,6 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   for (var message in messages!) {
                     final String messagetext = message.data()['text'];
                     final String messageSender = message.data()['sender'];
+
                     final currentUser = loggedInUser.email;
 
                     final messagebubble = MessageBubble(
@@ -158,8 +196,8 @@ class _ChatScreenState extends State<ChatScreen> {
                       _firestore.collection('messages').add(
                         {
                           'text': messageText,
-                          'sender': loggedInUser.email
-                          // _auth.currentUser?.email ?? 'anon'
+                          'sender': loggedInUser.email,
+                          'timestamp': FieldValue.serverTimestamp(),
                         },
                       );
                     },
@@ -179,12 +217,16 @@ class _ChatScreenState extends State<ChatScreen> {
 }
 
 class MessageBubble extends StatelessWidget {
-  const MessageBubble(
-      {Key? key, required this.text, required this.sender, required this.isMe})
-      : super(key: key);
+  const MessageBubble({
+    Key? key,
+    required this.text,
+    required this.sender,
+    required this.isMe,
+  }) : super(key: key);
   final String? text;
   final String? sender;
   final bool isMe;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -196,7 +238,7 @@ class MessageBubble extends StatelessWidget {
           Text(
             sender!,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               color: Colors.black54,
             ),
           ),
@@ -223,7 +265,7 @@ class MessageBubble extends StatelessWidget {
                 '$text',
                 style: TextStyle(
                   color: isMe ? Colors.white : Colors.black54,
-                  fontSize: 20,
+                  fontSize: 13,
                 ),
               ),
             ),

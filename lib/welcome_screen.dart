@@ -59,7 +59,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 Hero(
                   tag: 'logo',
                   child: Container(
-                    child: Image.asset('images/logo.png'),
+                    child: Image.asset('images/bestteam.png'),
                     height: 60.0,
                   ),
                 ),
@@ -74,7 +74,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         fontWeight: FontWeight.w900,
                         fontStyle: FontStyle.italic,
                       ),
-                      speed: const Duration(milliseconds: 100),
+                      speed: const Duration(milliseconds: 250),
                     ),
                   ],
                   totalRepeatCount: 100,
