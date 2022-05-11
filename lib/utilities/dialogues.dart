@@ -79,3 +79,19 @@ Future<bool> switchUserDialog(
     (value) => value ?? false,
   );
 }
+
+Future<bool> deleteAllMessagesDialog(
+  BuildContext context,
+) {
+  return showGenericDialogue(
+    context: context,
+    title: "Delete Messages",
+    content: 'This action would delete all your team messages!!!',
+    optionsBuilder: () => {
+      'Cancel': false,
+      'delete': true,
+    },
+  ).then(
+    (value) => value ?? false,
+  );
+}

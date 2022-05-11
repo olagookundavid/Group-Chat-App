@@ -37,9 +37,12 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.chat_rounded),
-          onPressed: () {
-            crudMethod.deleteData();
+          icon: const Icon(Icons.delete),
+          onPressed: () async {
+            final shouldDelete = await deleteAllMessagesDialog(context);
+            if (shouldDelete) {
+              crudMethod.deleteData();
+            }
           },
         ),
         actions: <Widget>[
@@ -50,7 +53,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   final shouldlogout = await showLogoutDialog(context);
 
                   if (shouldlogout) {
-                    // await auth.logOut();
                     crudMethod.logOut();
                     Navigator.pushNamedAndRemoveUntil(
                         context, WelcomeScreen.id, (route) => false);
@@ -60,7 +62,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   final shouldswitchuser = await switchUserDialog(context);
 
                   if (shouldswitchuser) {
-                    // await auth.logOut();
                     crudMethod.logOut();
                     Navigator.pushNamedAndRemoveUntil(
                         context, LoginScreen.id, (route) => false);
