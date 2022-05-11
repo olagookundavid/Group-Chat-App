@@ -1,13 +1,12 @@
-// ignore_for_file: , avoid_print,
-
+import 'package:chat_app/services/crud/firestorecrud.dart';
 import 'package:chat_app/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/constants.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'utilities/dialogues.dart';
 import 'login_screen.dart';
 
+CrudMethods crudMethod = CrudMethods();
 enum MenuAction { logout, switchuser }
 
 class ChatScreen extends StatefulWidget {
@@ -19,49 +18,12 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late User loggedInUser;
   late final TextEditingController _messageTextController;
-
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
+    crudMethod.isLoggedIn();
     _messageTextController = TextEditingController();
-  }
-
-  //fireauth initialization
-  final _auth = FirebaseAuth.instance;
-
-  //firestore initialization
-  final _firestore = FirebaseFirestore.instance;
-
-  getCurrentUser() {
-    final user = _auth.currentUser;
-    if (user != null) {
-      loggedInUser = user;
-    } else {
-      return;
-    }
-  }
-
-  Future deleteData(String id) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user?.uid)
-          .collection("collection_name")
-          .doc(id)
-          .delete();
-    } catch (e) {
-      return false;
-    }
-  }
-
-  Future<void> rejectJob(String jobId) {
-    return _firestore
-        .collection('jobs')
-        .doc(FieldPath.documentId.toString())
-        .delete();
   }
 
   @override
@@ -74,9 +36,11 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Image.asset(
-          'images/chatviewicon.png',
-          fit: BoxFit.fitWidth,
+        leading: IconButton(
+          icon: const Icon(Icons.chat_rounded),
+          onPressed: () {
+            crudMethod.deleteData();
+          },
         ),
         actions: <Widget>[
           PopupMenuButton(
@@ -87,7 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (shouldlogout) {
                     // await auth.logOut();
-                    _auth.signOut();
+                    crudMethod.logOut();
                     Navigator.pushNamedAndRemoveUntil(
                         context, WelcomeScreen.id, (route) => false);
                   }
@@ -97,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                   if (shouldswitchuser) {
                     // await auth.logOut();
-                    _auth.signOut();
+                    crudMethod.logOut();
                     Navigator.pushNamedAndRemoveUntil(
                         context, LoginScreen.id, (route) => false);
                   }
@@ -127,90 +91,79 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white70,
+        backgroundColor: Colors.lightBlueAccent,
       ),
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-              stream: _firestore
-                  .collection('messages')
-                  .orderBy(
-                    'timestamp',
-                    descending: false,
-                  )
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final messages = snapshot.data?.docs.reversed;
-                  List<MessageBubble> messageWidgets = [];
-                  for (var message in messages!) {
-                    final String messagetext = message.data()['text'];
-                    final String messageSender = message.data()['sender'];
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: crudMethod.getMessageStreams(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final messages = snapshot.data?.docs.reversed;
+                List<MessageBubble> messageWidgets = [];
+                for (var message in messages!) {
+                  final String messagetext = message.data()['text'];
+                  final String messageSender = message.data()['sender'];
+                  final messagebubble = MessageBubble(
+                    text: messagetext,
+                    sender: messageSender,
+                    isMe: loggedInUser == messageSender,
+                  );
 
-                    final currentUser = loggedInUser.email;
-
-                    final messagebubble = MessageBubble(
-                      text: messagetext,
-                      sender: messageSender,
-                      isMe: currentUser == messageSender,
-                    );
-
-                    messageWidgets.add(messagebubble);
-                  }
-                  return Expanded(
-                      child: ListView(
+                  messageWidgets.add(messagebubble);
+                }
+                return Expanded(
+                  child: ListView(
                     reverse: true,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 20,
                     ),
                     children: messageWidgets,
-                  ));
-                } else {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      backgroundColor: Colors.lightBlueAccent,
-                    ),
-                  );
-                }
-              },
-            ),
-            Container(
-              decoration: kMessageContainerDecoration,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: TextField(
-                      controller: _messageTextController,
-                      decoration: kMessageTextFieldDecoration,
-                    ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      final messageText = _messageTextController.text;
-                      _messageTextController.clear();
-                      _firestore.collection('messages').add(
-                        {
-                          'text': messageText,
-                          'sender': loggedInUser.email,
-                          'timestamp': FieldValue.serverTimestamp(),
-                        },
-                      );
-                    },
-                    child: const Text(
-                      'Send',
-                      style: kSendButtonTextStyle,
-                    ),
+                );
+              } else {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.lightBlueAccent,
                   ),
-                ],
-              ),
+                );
+              }
+            },
+          ),
+          Container(
+            decoration: kMessageContainerDecoration,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _messageTextController,
+                    decoration: kMessageTextFieldDecoration,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    final messageText = _messageTextController.text;
+                    _messageTextController.clear();
+                    Map<String, dynamic> messageData = {
+                      'text': messageText,
+                      'sender': loggedInUser,
+                      'timestamp': FieldValue.serverTimestamp(),
+                    };
+                    crudMethod.addData(messageData);
+                  },
+                  child: const Text(
+                    'Send',
+                    style: kSendButtonTextStyle,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

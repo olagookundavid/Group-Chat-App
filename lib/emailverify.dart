@@ -1,7 +1,7 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:chat_app/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
 import 'chat_screen.dart';
 
 final _auth = FirebaseAuth.instance;
@@ -16,9 +16,7 @@ class EmailVerificationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: Image.asset(
-          'images/chatviewicon.png',
-        ),
+        leading: null,
         title: const Text('Team Chat'),
         centerTitle: true,
         backgroundColor: Colors.lightBlueAccent,
@@ -42,6 +40,28 @@ class EmailVerificationScreen extends StatelessWidget {
               const SizedBox(
                 height: 10,
               ),
+              AnimatedTextKit(
+                animatedTexts: [
+                  TypewriterAnimatedText(
+                    'Just One More Step',
+                    textAlign: TextAlign.center,
+                    textStyle: const TextStyle(
+                      color: Colors.black45,
+                      fontSize: 25.0,
+                      fontWeight: FontWeight.w900,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    speed: const Duration(milliseconds: 250),
+                  ),
+                ],
+                totalRepeatCount: 100,
+                pause: const Duration(milliseconds: 50),
+                displayFullTextOnTap: true,
+                stopPauseOnTap: true,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
               const Text(
                 'Please verify your email : ',
                 style: TextStyle(
@@ -50,7 +70,7 @@ class EmailVerificationScreen extends StatelessWidget {
                 ),
               ),
               const Text(
-                'We have sent a verification link to your email! \n click on it to verify your email',
+                'We have sent a verification link to your email! \nclick on it to verify your email',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
