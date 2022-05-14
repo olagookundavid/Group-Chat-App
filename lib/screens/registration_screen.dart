@@ -1,11 +1,11 @@
-import 'package:chat_app/emailverify.dart';
-import 'package:chat_app/login_screen.dart';
+import 'package:chat_app/screens/emailverify.dart';
+import 'package:chat_app/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'services/authentication.dart';
-import 'utilities/dialogues.dart';
-import 'rounded_button.dart';
-import 'constants.dart';
+import '../services/authentication.dart';
+import '../utilities/dialogues.dart';
+import '../utilities/rounded_button.dart';
+import '../utilities/constants.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 class RegistrationScreen extends StatefulWidget {

@@ -1,9 +1,9 @@
 import 'package:chat_app/services/crud/firestorecrud.dart';
-import 'package:chat_app/welcome_screen.dart';
+import 'package:chat_app/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:chat_app/constants.dart';
+import 'package:chat_app/utilities/constants.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'utilities/dialogues.dart';
+import '../utilities/dialogues.dart';
 import 'login_screen.dart';
 
 CrudMethods crudMethod = CrudMethods();

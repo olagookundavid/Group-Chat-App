@@ -1,14 +1,14 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:chat_app/registration_screen.dart';
+import 'package:chat_app/screens/registration_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'emailverify.dart';
-import 'services/authentication.dart';
-import 'utilities/dialogues.dart';
-import 'rounded_button.dart';
-import 'constants.dart';
+import '../services/authentication.dart';
+import '../utilities/dialogues.dart';
+import '../utilities/rounded_button.dart';
+import '../utilities/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:chat_app/chat_screen.dart';
+import 'package:chat_app/screens/chat_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   static const String id = 'login_screen';

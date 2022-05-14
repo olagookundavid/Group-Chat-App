@@ -1,5 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:chat_app/rounded_button.dart';
+import 'package:chat_app/utilities/rounded_button.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'chat_screen.dart';

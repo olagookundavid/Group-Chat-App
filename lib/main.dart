@@ -1,9 +1,9 @@
-import 'package:chat_app/emailverify.dart';
+import 'package:chat_app/screens/emailverify.dart';
 import 'package:flutter/material.dart';
-import 'package:chat_app/welcome_screen.dart';
-import 'package:chat_app/registration_screen.dart';
-import 'package:chat_app/login_screen.dart';
-import 'package:chat_app/chat_screen.dart';
+import 'package:chat_app/screens/welcome_screen.dart';
+import 'package:chat_app/screens/registration_screen.dart';
+import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/screens/chat_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() async {

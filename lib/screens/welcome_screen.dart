@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'rounded_button.dart';
+import '../utilities/rounded_button.dart';
 import 'login_screen.dart';
 import 'registration_screen.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
